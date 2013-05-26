@@ -1,0 +1,42 @@
+{
+    "name": "derptest/phpmachinist-behat-context",
+    "description": "Behat context for managing data objects",
+    "license": "MIT",
+    "type": "library",
+    "keywords": ["machinist", "php", "test", "object", "factory", "blueprint", "behat"],
+    "authors": [
+        {
+            "name": "Stephan Soileau",
+            "role": "Developer"
+        },
+        {
+            "name": "Adam Englander",
+            "homepage": "http://adamknowsstuff.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/derptest/phpmachinst-behat-extension/issues",
+        "wiki": "https://github.com/derptest/phpmachinst-behat-extension/wiki",
+        "source": "https://github.com/derptest/phpmachinst-behat-extension"
+    },
+    "autoload": {
+        "psr-0": {
+            "DerpTest\\Behat\\MachinistExtension": "src"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
+        }
+    },
+    "require": {
+        "php": ">5.3.0",
+        "behat/behat": "*",
+        "derptest/phpmachinist": "2.0.*@dev"
+    },
+    "require-dev": {
+        "phake/phake": "v2.0.0-alpha1",
+        "phpunit/phpunit": "*"
+    }
+}
