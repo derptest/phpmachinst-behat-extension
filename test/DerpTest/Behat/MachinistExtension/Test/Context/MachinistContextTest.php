@@ -50,47 +50,6 @@ class MachinistContextTest extends \PHPUnit_Framework_TestCase
         $this->context = null;
     }
 
-    public function testGetMainContextParentNotSetReturnsSelf()
-    {
-        $actual = $this->context->getMainContext();
-
-        $this->assertEquals($this->context, $actual);
-    }
-
-    public function testGetMainContextParentIsSetAndHasMainReturnsParent()
-    {
-        $mainContext = Phake::mock('\Behat\Behat\Context\ExtendedContextInterface');
-        $parentContext = Phake::mock('\Behat\Behat\Context\ExtendedContextInterface');
-        Phake::when($parentContext)
-            ->getMainContext()
-            ->thenReturn($mainContext);
-        $this->context->setParentContext($parentContext);
-
-        $actual = $this->context->getMainContext();
-
-        Phake::verify($parentContext)->getMainContext();
-        $this->assertSame($mainContext, $actual);
-    }
-
-    public function testGetSubcontextReturnsNull()
-    {
-        $actual = $this->context->getSubcontext('anything');
-        $this->assertNull($actual);
-    }
-
-    public function testGetSubcontextsReturnsEmptyArray()
-    {
-        $actual = $this->context->getSubcontexts();
-        $this->assertInternalType('array', $actual);
-        $this->assertEmpty($actual);
-    }
-
-    public function testGetSubcontextByClassNameReturnsNull()
-    {
-        $actual = $this->context->getSubcontextByClassName('anything');
-        $this->assertNull($actual);
-    }
-
     public function testThereAreNoneOfTheseMachines()
     {
         $blueprint = Phake::mock('\DerpTest\Machinist\Blueprint');
@@ -98,16 +57,15 @@ class MachinistContextTest extends \PHPUnit_Framework_TestCase
             ->getBlueprint(Phake::anyParameters())
             ->thenReturn($blueprint);
         $blueprintName = 'Blueprint Name';
-        $actual = $this->context->thereAreNoneOfTheseMachines($blueprintName);
+        $this->context->thereAreNoneOfTheseMachines($blueprintName);
 
         Phake::verify($this->machinist)->getBlueprint($blueprintName);
         Phake::verify($blueprint)->wipe(false);
-        $this->assertNull($actual);
     }
 
     public function testThereAreNoneOfTheseMachinesUsesTruncateOnWipeParameter()
     {
-        $this->context->setParameters(
+        $this->context->setMachinistParameters(
             array('truncate_on_wipe' => true)
         );
         $blueprint = Phake::mock('\DerpTest\Machinist\Blueprint');
@@ -115,30 +73,27 @@ class MachinistContextTest extends \PHPUnit_Framework_TestCase
             ->getBlueprint(Phake::anyParameters())
             ->thenReturn($blueprint);
         $blueprintName = 'Blueprint Name';
-        $actual = $this->context->thereAreNoneOfTheseMachines($blueprintName);
+        $this->context->thereAreNoneOfTheseMachines($blueprintName);
 
         Phake::verify($this->machinist)->getBlueprint($blueprintName);
         Phake::verify($blueprint)->wipe(true);
-        $this->assertNull($actual);
     }
 
     public function testThereAreNoMachines()
     {
-        $actual = $this->context->thereAreNoMachines();
+        $this->context->thereAreNoMachines();
 
         Phake::verify($this->machinist)->wipeAll(false);
-        $this->assertNull($actual);
     }
 
     public function testThereAreNoMachinesUsesTruncateOnWipeParameter()
     {
-        $this->context->setParameters(
+        $this->context->setMachinistParameters(
             array('truncate_on_wipe' => true)
         );
 
-        $actual = $this->context->thereAreNoMachines();
+        $this->context->thereAreNoMachines();
 
         Phake::verify($this->machinist)->wipeAll(true);
-        $this->assertNull($actual);
     }
 }

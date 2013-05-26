@@ -25,7 +25,6 @@ namespace DerpTest\Behat\MachinistExtension\Test;
 use DerpTest\Behat\MachinistExtension\Extension;
 use Phake;
 use Phake_Stubber_Answers_StaticAnswer;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class ExtensionTest extends \PHPUnit_Framework_TestCase {
 
@@ -50,5 +49,4 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
         $this->assertInternalType('array', $actual);
         $this->assertEmpty($actual);
     }
-
 }

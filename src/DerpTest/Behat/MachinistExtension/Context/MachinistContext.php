@@ -31,82 +31,8 @@ use DerpTest\Machinist\Machinist;
  *
  * Machinist context for implementing Machinist machines in Behat
  */
-class MachinistContext implements ExtendedContextInterface, MachinistAwareInterface
+class MachinistContext extends RawMachinistContext implements MachinistAwareInterface
 {
-    /**
-     * @var ExtendedContextInterface
-     */
-    protected $parentContext;
-
-    /**
-     * @var \DerpTest\Machinist\Machinist
-     */
-    protected $machinist;
-
-    /**
-     * @var bool
-     */
-    protected $truncateOnWipe = false;
-
-    /**
-     * Returns main context.
-     *
-     * @return \Behat\Behat\Context\ExtendedContextInterface
-     */
-    public function getMainContext()
-    {
-        if ($this->parentContext) {
-            $mainContext = $this->parentContext->getMainContext();
-        } else {
-            $mainContext = $this;
-        }
-        return $mainContext;
-    }
-
-    /**
-     * Sets parent context of current context.
-     *
-     * @param \Behat\Behat\Context\ExtendedContextInterface $parentContext
-\     */
-    public function setParentContext(ExtendedContextInterface $parentContext)
-    {
-        $this->parentContext = $parentContext;
-    }
-
-    /**
-     * Find current context's sub-context by alias name.
-     *
-     * @param string $alias
-     *
-     * @return ExtendedContextInterface
-     */
-    public function getSubcontext($alias)
-    {
-        return null;
-    }
-
-    /**
-     * Returns all added sub-contexts.
-     *
-     * @return array
-     */
-    public function getSubcontexts()
-    {
-        return array();
-    }
-
-    /**
-     * Finds sub-context by it's name.
-     *
-     * @param string $className
-     *
-     * @return ContextInterface
-     */
-    public function getSubcontextByClassName($className)
-    {
-        return null;
-    }
-
     /**
      * @param $blueprint
      * @param TableNode $table
@@ -225,7 +151,7 @@ class MachinistContext implements ExtendedContextInterface, MachinistAwareInterf
      * @param array $parameters
      * @return void
      */
-    public function setParameters(array $parameters)
+    public function setMachinistParameters(array $parameters)
     {
         $this->processParameters($parameters);
 

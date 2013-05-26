@@ -60,6 +60,6 @@ class MachinistAwareInitializer implements InitializerInterface
     public function initialize(ContextInterface $context)
     {
         $context->setMachinist($this->machinist);
-        $context->setParameters($this->parameters);
+        $context->setMachinistParameters($this->parameters);
     }
 }

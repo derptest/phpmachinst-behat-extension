@@ -45,5 +45,5 @@ interface MachinistAwareInterface
      * @param array $parameters
      * @return void
      */
-    public function setParameters(array $parameters);
+    public function setMachinistParameters(array $parameters);
 }

@@ -19,7 +19,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
- 
+
 /**
  * @author Adam L. Englander <adam.l.englander@coupla.co>
  *
@@ -33,51 +33,148 @@ namespace DerpTest\Behat\MachinistExtension\Test;
 
 use DerpTest\Behat\MachinistExtension\Extension;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Config\Definition\NodeInterface;
 
 class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Extension
+     * @var NodeInterface
      */
-    private $extension;
+    private $node;
+
+    /**
+     * @var array Minimum config to avoid error
+     */
+    private $requiredConfig = array(
+        'store' => array(
+            'default' => array(
+                'type' => 'sqlite',
+                'dsn' => 'sqlite::memory:'
+            )
+        )
+    );
+
 
     protected function setUp()
     {
-        $this->extension = new Extension();
+        $extension = new Extension();
+        $definition = new ArrayNodeDefinition('test');
+        $extension->getConfig($definition);
+        $this->node = $definition->getNode();
     }
 
     protected function tearDown()
     {
-        $this->extension = null;
+        $this->node = null;
     }
 
     public function testTruncateOnWipeCanBeConfigured()
     {
-        $definition  = new ArrayNodeDefinition('test');
-        $this->extension->getConfig($definition);
-
-        $node = $definition->getNode();
-        $actual = $node->finalize(array());
+        $actual = $this->node->finalize($this->requiredConfig);
         $this->assertArrayHasKey('truncate_on_wipe', $actual);
     }
 
     public function testTruncateOnWipeDefaultsToFalse()
     {
-        $definition  = new ArrayNodeDefinition('test');
-        $this->extension->getConfig($definition);
-
-        $node = $definition->getNode();
-        $actual = $node->finalize(array());
+        $actual = $this->node->finalize($this->requiredConfig);
         $this->assertFalse($actual['truncate_on_wipe']);
     }
 
     public function testTruncateOnWipeCanUseConfig()
     {
-        $definition  = new ArrayNodeDefinition('test');
-        $this->extension->getConfig($definition);
-
-        $node = $definition->getNode();
-        $actual = $node->finalize(array('truncate_on_wipe' => true));
+        $actual = $this->node->finalize(
+            array_merge(
+                $this->requiredConfig,
+                array('truncate_on_wipe' => true)
+            )
+        );
         $this->assertTrue($actual['truncate_on_wipe']);
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     */
+    public function testStoreSettingsDefault()
+    {
+        $this->node->finalize(array());
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     */
+    public function testStoreSettingsMissingTypeErrors()
+    {
+        $this->node->finalize(
+            array(
+                'store' => array(
+                    'default' => array(
+                        'dsn' => 'sqlite::memory:'
+                    )
+                )
+            )
+        );
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     */
+    public function testStoreSettingsMissingDsnErrors()
+    {
+        $this->node->finalize(
+            array(
+                'store' => array(
+                    'default' => array(
+                        'type' => 'sqlite',
+                    )
+                )
+            )
+        );
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     */
+    public function testStoreInvalidTypeErrors()
+    {
+        $this->node->finalize(
+            array(
+                'store' => array(
+                    'default' => array(
+                        'type' => 'invalid',
+                        'dsn' => 'driver:server:db'
+                    )
+                )
+            )
+        );
+    }
+
+    /**
+     * @dataProvider validStoreTypeValueProvider
+     */
+    public function testStoreValidTypesReturnValidValues()
+    {
+        $expected = array(
+            'default' => array(
+                'type' => 'sqlite',
+                'dsn' => 'driver:server:db'
+            )
+        );
+        $actual = $this->node->finalize(array('store' => $expected));
+
+        $this->assertInternalType('array', $actual);
+        $this->assertArrayHasKey('store', $actual);
+        $this->assertEquals($expected, $actual['store']);
+    }
+
+    public function validStoreTypeValueProvider()
+    {
+        return array(
+            'SQLite' => array('sqlite'),
+            'MySql' => array('mysql'),
+            'Mongo DB' => array('mongo'),
+            'Doctrine ORM' => array('doctrine-orm'),
+            'Doctrine MongoDB' => array('doctrine-mongo'),
+        );
     }
 }

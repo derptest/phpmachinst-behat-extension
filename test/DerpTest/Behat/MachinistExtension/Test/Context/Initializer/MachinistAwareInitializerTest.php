@@ -79,8 +79,6 @@ class MachinistAwareInitializerTest extends \PHPUnit_Framework_TestCase
         $initializer->initialize($context);
 
         Phake::verify($context)->setMachinist($this->machinist);
-        Phake::verify($context)->setParameters($expectedArray);
-
-        $this->assertTrue(true);
+        Phake::verify($context)->setMachinistParameters($expectedArray);
     }
 }

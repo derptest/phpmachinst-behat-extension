@@ -23,6 +23,7 @@
 namespace DerpTest\Behat\MachinistExtension;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -41,7 +42,11 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
      */
     public function load(array $config, ContainerBuilder $container)
     {
-
+        if (!array_key_exists('store', $config)) {
+            throw new InvalidConfigurationException(
+                'The DerpTest\Behat\MachinistExtension\Extension requires at least one "store" to be configured'
+            );
+        }
     }
 
     /**
@@ -51,13 +56,43 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
      */
     public function getConfig(ArrayNodeDefinition $builder)
     {
-        $builder->
-            children()->
-                scalarNode('truncate_on_wipe')->
-                    defaultFalse()->
-                end()->
-            end()->
-        end();
+        $builder
+            ->children()
+                ->scalarNode('truncate_on_wipe')
+                    ->defaultFalse()
+                ->end()
+                ->arrayNode('store')
+                    ->isRequired()
+                    ->requiresAtLeastOneElement()
+                    ->useAttributeAsKey('name')
+                    ->prototype('array')
+                        ->children()
+                            ->enumNode('type')
+                                ->isRequired()
+                                ->values(array(
+                                    'sqlite',
+                                    'mysql',
+                                    'mongo',
+                                    'doctrine-orm',
+                                    'doctrine-mongo'
+                                ))
+                            ->end()
+                            ->scalarNode('dsn')
+                                ->isRequired()
+                            ->end()
+                            ->scalarNode('user')
+                            ->end()
+                            ->scalarNode('password')
+                            ->end()
+                            ->scalarNode('database')
+                            ->end()
+                            ->arrayNode('options')
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 
     /**
