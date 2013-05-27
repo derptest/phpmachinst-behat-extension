@@ -167,7 +167,7 @@ class RawMachinistContext implements ExtendedContextInterface, MachinistAwareInt
     /**
      * @return Machinist
      */
-    protected function getMachinist()
+    public function getMachinist()
     {
         return $this->machinist;
     }

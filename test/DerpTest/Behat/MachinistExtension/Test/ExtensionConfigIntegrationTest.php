@@ -49,8 +49,7 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
     private $requiredConfig = array(
         'store' => array(
             'default' => array(
-                'type' => 'sqlite',
-                'dsn' => 'sqlite::memory:'
+                'type' => 'doctrine-orm',
             )
         )
     );
@@ -109,23 +108,6 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
             array(
                 'store' => array(
                     'default' => array(
-                        'dsn' => 'sqlite::memory:'
-                    )
-                )
-            )
-        );
-    }
-
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     */
-    public function testStoreSettingsMissingDsnErrors()
-    {
-        $this->node->finalize(
-            array(
-                'store' => array(
-                    'default' => array(
-                        'type' => 'sqlite',
                     )
                 )
             )
@@ -142,7 +124,6 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
                 'store' => array(
                     'default' => array(
                         'type' => 'invalid',
-                        'dsn' => 'driver:server:db'
                     )
                 )
             )
@@ -157,7 +138,6 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
         $expected = array(
             'default' => array(
                 'type' => 'sqlite',
-                'dsn' => 'driver:server:db'
             )
         );
         $actual = $this->node->finalize(array('store' => $expected));

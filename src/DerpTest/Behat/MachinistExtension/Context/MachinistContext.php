@@ -114,46 +114,4 @@ class MachinistContext extends RawMachinistContext implements MachinistAwareInte
             }
         }
     }
-
-    /**
-     * @return Machinist
-     */
-    protected function getMachinist()
-    {
-        return $this->machinist;
-    }
-
-    protected function processParameters(array $parameters)
-    {
-        if (array_key_exists('database', $parameters)) {
-            $this->initializeStores($parameters['database']);
-        }
-
-        if (array_key_exists('truncate_on_wipe', $parameters)) {
-            $this->truncateOnWipe = (bool) $parameters['truncate_on_wipe'];
-        }
-    }
-
-    /**
-     * Set Machinist
-     *
-     * @param Machinist $machinist
-     * @return void
-     */
-    public function setMachinist(Machinist $machinist)
-    {
-        $this->machinist = $machinist;
-    }
-
-    /**
-     * Set the Machinist parameters
-     *
-     * @param array $parameters
-     * @return void
-     */
-    public function setMachinistParameters(array $parameters)
-    {
-        $this->processParameters($parameters);
-
-    }
 }
