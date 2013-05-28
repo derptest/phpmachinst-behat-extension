@@ -6,6 +6,7 @@ fixtures and verifying data within a feature test just as you would in a unit te
 
 ## Install
 Add the package derptest/phpmachinist-behat-extension to your composer.json
+
 For more information about Composer, please visit http://getcomposer.org
 
 ## Documentation
