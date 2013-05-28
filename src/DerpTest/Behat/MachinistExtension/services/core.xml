@@ -4,20 +4,23 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <parameters>
         <parameter key="derptest.phpmachinist.class">DerpTest\Machinist\Machinist</parameter>
+        <parameter key="derptest.phpmachinist.behat.context.class_guesser.class">DerpTest\Behat\MachinistExtension\Context\ClassGuesser\MachinistContextClassGuesser</parameter>
+        <parameter key="derptest.phpmachinist.behat.context.initializer.class">DerpTest\Behat\MachinistExtension\Context\Initializer\MachinistAwareInitializer</parameter>
         <parameter key="derptest.phpmachinist.behat.parameters" type="collection"></parameter>
     </parameters>
     <services>
 
         <service id="derptest.phpmachinist"
                  class="%derptest.phpmachinist.class%"
+                 factory-class="%derptest.phpmachinist.class%"
                  factory-method="instance"
         />
 
-        <service id="derptest.phpmachinist.behat.context.class_guesser" class="%behat.mink.context.class_guesser.class%">
+        <service id="derptest.phpmachinist.behat.context.class_guesser" class="%derptest.phpmachinist.behat.context.class_guesser.class%">
             <tag name="behat.context.class_guesser" />
         </service>
 
-        <service id="derptest.phpmachinist.context.behat.initializer" class="%behat.mink.context.initializer.class%">
+        <service id="derptest.phpmachinist.context.behat.initializer" class="%derptest.phpmachinist.behat.context.initializer.class%">
             <argument type="service" id="derptest.phpmachinist" />
             <argument>%derptest.phpmachinist.behat.parameters%</argument>
             <tag name="behat.context.initializer" />

@@ -34,6 +34,16 @@ use DerpTest\Machinist\Machinist;
  */
 class MachinistAwareInitializer implements InitializerInterface
 {
+    /**
+     * @var \DerpTest\Machinist\Machinist
+     */
+    private $machinist;
+
+    /**
+     * @var array
+     */
+    private $parameters;
+
     public function __construct(Machinist $machinist, array $parameters)
     {
         $this->machinist = $machinist;
