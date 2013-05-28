@@ -24,9 +24,20 @@ namespace DerpTest\Behat\MachinistExtension\Test;
 
 use DerpTest\Behat\MachinistExtension\Extension;
 use Phake;
-use Phake_Stubber_Answers_StaticAnswer;
 
 class ExtensionTest extends \PHPUnit_Framework_TestCase {
+
+    /**
+     * @var \Symfony\Component\DependencyInjection\ContainerBuilder
+     * @Mock
+     */
+    private $container;
+
+    /**
+     * @var \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface
+     * @Mock
+     */
+    private $parameterBag;
 
     /**
      * @var Extension
@@ -35,6 +46,11 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
 
     protected function setUp()
     {
+        Phake::initAnnotations($this);
+        Phake::when($this->container)
+            ->getParameterBag()
+            ->thenReturn($this->parameterBag);
+
         $this->extension = new Extension();
     }
 
@@ -48,5 +64,50 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
         $actual = $this->extension->getCompilerPasses();
         $this->assertInternalType('array', $actual);
         $this->assertEmpty($actual);
+    }
+
+    public function testLoadSetsParameters()
+    {
+        $expected = array('my config' => 'value');
+        $actual = null;
+
+        $this->extension->load($expected, $this->container);
+        Phake::verify($this->container)->set('derptest.phpmachinist.behat.parameters', Phake::capture($actual));
+        $this->assertEquals($expected, $actual, 'Unexpected configuration passed to container');
+    }
+
+    public function testLoadCreatesMachinistService()
+    {
+        $this->extension->load(array(), $this->container);
+        Phake::verify($this->container)->setDefinition(
+            'derptest.phpmachinist',
+            $this->isInstanceOf('\Symfony\Component\DependencyInjection\Definition')
+        );
+    }
+
+    public function testLoadCreatesTaggedClassGuesserService()
+    {
+        $this->extension->load(array(), $this->container);
+
+        $definition = null;
+        Phake::verify($this->container)->setDefinition(
+            'derptest.phpmachinist.behat.context.class_guesser',
+            Phake::capture($definition)
+        );
+        $this->assertInstanceOf('\Symfony\Component\DependencyInjection\Definition', $definition);
+        $this->assertTrue($definition->hasTag('behat.context.class_guesser'));
+    }
+
+    public function testLoadCreatesTaggedInitializerService()
+    {
+        $this->extension->load(array(), $this->container);
+
+        $definition = null;
+        Phake::verify($this->container)->setDefinition(
+            'derptest.phpmachinist.context.behat.initializer',
+            Phake::capture($definition)
+        );
+        $this->assertInstanceOf('\Symfony\Component\DependencyInjection\Definition', $definition);
+        $this->assertTrue($definition->hasTag('behat.context.initializer'));
     }
 }

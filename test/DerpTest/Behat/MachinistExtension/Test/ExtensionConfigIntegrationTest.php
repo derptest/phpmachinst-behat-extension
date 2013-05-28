@@ -49,7 +49,8 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
     private $requiredConfig = array(
         'store' => array(
             'default' => array(
-                'type' => 'doctrine-orm',
+                'type' => 'sqlite',
+                'dsn'  => 'sqlite::memory:'
             )
         )
     );
@@ -108,6 +109,23 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
             array(
                 'store' => array(
                     'default' => array(
+                        'dsn' => 'sqlite::memory:'
+                    )
+                )
+            )
+        );
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     */
+    public function testStoreSettingsMissingDsnErrors()
+    {
+        $this->node->finalize(
+            array(
+                'store' => array(
+                    'default' => array(
+                        'type' => 'sqlite'
                     )
                 )
             )
@@ -124,6 +142,7 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
                 'store' => array(
                     'default' => array(
                         'type' => 'invalid',
+                        'dsn' => 'sqlite::memory:'
                     )
                 )
             )
@@ -133,11 +152,12 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider validStoreTypeValueProvider
      */
-    public function testStoreValidTypesReturnValidValues()
+    public function testStoreValidTypesReturnValidValues($type)
     {
         $expected = array(
             'default' => array(
-                'type' => 'sqlite',
+                'type' => $type,
+                'dsn' => 'sqlite::memory:'
             )
         );
         $actual = $this->node->finalize(array('store' => $expected));
@@ -152,9 +172,7 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
         return array(
             'SQLite' => array('sqlite'),
             'MySql' => array('mysql'),
-            'Mongo DB' => array('mongo'),
-            'Doctrine ORM' => array('doctrine-orm'),
-            'Doctrine MongoDB' => array('doctrine-mongo'),
+            'Mongo DB' => array('mongo')
         );
     }
 }

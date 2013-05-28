@@ -24,7 +24,9 @@ namespace DerpTest\Behat\MachinistExtension;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 /**
  * @author Adam L. Englander <adam.l.englander@coupla.co>
@@ -42,11 +44,9 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
      */
     public function load(array $config, ContainerBuilder $container)
     {
-        if (!array_key_exists('store', $config)) {
-            throw new InvalidConfigurationException(
-                'The DerpTest\Behat\MachinistExtension\Extension requires at least one "store" to be configured'
-            );
-        }
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/services'));
+        $loader->load('core.xml');
+        $container->set('derptest.phpmachinist.behat.parameters', $config);
     }
 
     /**
@@ -72,16 +72,12 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
                                 ->values(array(
                                     'sqlite',
                                     'mysql',
-                                    'mongo',
-                                    'doctrine-orm',
-                                    'doctrine-mongo'
+                                    'mongo'
                                 ))
                             ->end()
                             ->scalarNode('dsn')
-                            ->end()
-                            ->scalarNode('service_id')
-                            ->end()
-                            ->scalarNode('entity_manager')
+                                ->isRequired()
+                                ->cannotBeEmpty()
                             ->end()
                             ->scalarNode('user')
                             ->end()
