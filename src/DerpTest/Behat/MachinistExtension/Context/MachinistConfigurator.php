@@ -21,7 +21,11 @@
  */
 
 namespace DerpTest\Behat\MachinistExtension\Context;
+use DerpTest\Machinist\Blueprint;
 use DerpTest\Machinist\Machinist;
+use DerpTest\Machinist\Relationship;
+use DerpTest\Machinist\Store\MongoDB;
+use DerpTest\Machinist\Store\SqlStore;
 
 /**
  * @author Adam L. Englander <adam.l.englander@coupla.co>
@@ -41,9 +45,85 @@ class MachinistConfigurator
         $this->machinist = $machinist;
     }
 
-    public function getMachinist()
+    public function configure(array $config)
     {
-        return $this->machinist;
+        if (isset($config['store']))
+        {
+            $this->configureStores($config['store']);
+        }
 
+        if (isset($config['blueprint'])) {
+            $this->configureBlueprints($config['blueprint']);
+        }
+    }
+
+    protected function configureStores(array $config)
+    {
+        foreach ($config as $name => $storeConfig) {
+            switch ($storeConfig['type']) {
+                case 'mongo':
+                    $this->addMongoStore($name, $storeConfig);
+                break;
+                case 'sqlite':
+                case 'mysql':
+                    $this->addSqlStore($name, $storeConfig);
+                break;
+            }
+        }
+    }
+
+    protected function addMongoStore($name, array $config)
+    {
+        $options = $config['options'];
+        if (!empty($config['username'])) {
+            $options['options']['username'] = $config['username'];
+        }
+        if (!empty($config['password'])) {
+            $options['options']['password'] = $config['password'];
+        }
+        $options['db'] = $config['database'];
+        $class = class_exists('\MongoClient') ? '\MongoClient' : '\Mongo';
+        $mongoClient = new $class($config['dsn'], $options);
+        $mongoDB = $mongoClient->selectDB($config['database']);
+        $store = new MongoDB($mongoDB);
+        $this->machinist->addStore($store, $name);
+    }
+
+    protected function addSqlStore($name, array $config)
+    {
+        $username = isset($config['username'])? $config['username'] : null;
+        $password = isset($config['password'])? $config['password'] : null;
+        $pdo = new \PDO($config['dsn'], $username, $password, $config['options']);
+        $store = SqlStore::fromPdo($pdo);
+        $this->machinist->addStore($store, $name);
+    }
+
+    protected function configureBlueprints(array $config)
+    {
+        foreach ($config as $name => $blueprintConfig) {
+            $defaults = $blueprintConfig['defaults'];
+            if (isset($blueprintConfig['relationships'])) {
+                $this->addRelationshipsToDefaults($blueprintConfig['relationships'], $defaults);
+            }
+
+            $blueprint = new Blueprint(
+                $this->machinist,
+                $blueprintConfig['entity'],
+                $defaults,
+                $blueprintConfig['store']
+            );
+
+            $this->machinist->addBlueprint($name, $blueprint);
+        }
+    }
+
+    protected function addRelationshipsToDefaults(array $relationshipConfigs, array &$defaults)
+    {
+        foreach ($relationshipConfigs as $target => $relationshipConfig) {
+            $relationship = new Relationship($this->machinist->getBlueprint($target));
+            $relationship->local($relationshipConfig['local']);
+            $relationship->foreign($relationshipConfig['foreign']);
+            $defaults[$target] = $relationship;
+        }
     }
 }

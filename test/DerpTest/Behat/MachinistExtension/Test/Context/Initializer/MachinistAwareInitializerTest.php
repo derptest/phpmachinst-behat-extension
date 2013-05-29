@@ -44,6 +44,12 @@ class MachinistAwareInitializerTest extends \PHPUnit_Framework_TestCase
      */
     private $machinist;
 
+    /**
+     * @var \DerpTest\Behat\MachinistExtension\Context\MachinistConfigurator
+     * @Mock
+     */
+    private $configurator;
+
     protected  function setUp()
     {
         Phake::initAnnotations($this);
@@ -58,27 +64,54 @@ class MachinistAwareInitializerTest extends \PHPUnit_Framework_TestCase
     public function testSupportsReturnsTrueForImplementingObject()
     {
         $machinistAware = new MachinistContext();
-        $initializer = new MachinistAwareInitializer($this->machinist, array());
+        $initializer = new MachinistAwareInitializer(
+            $this->machinist,
+            $this->configurator,
+            array()
+        );
         $actual = $initializer->supports($machinistAware);
         $this->assertTrue($actual);
     }
 
     public function testSupportsReturnsFalseForImplementingObject()
     {
-        $initializer = new MachinistAwareInitializer($this->machinist, array());
+        $initializer = new MachinistAwareInitializer(
+            $this->machinist,
+            $this->configurator,
+            array()
+        );
         $context = Phake::mock('\Behat\Behat\Context\ContextInterface');
         $actual = $initializer->supports($context);
         $this->assertFalse($actual);
     }
 
-    public function testInitialize()
+    public function testInitializeSetsDataOnContext()
     {
         $context = Phake::mock('\DerpTest\Behat\MachinistExtension\Context\MachinistContext');
         $expectedArray = array('Expected' => 'array');
-        $initializer = new MachinistAwareInitializer($this->machinist, $expectedArray);
+        $initializer = new MachinistAwareInitializer(
+            $this->machinist,
+            $this->configurator,
+            $expectedArray
+        );
         $initializer->initialize($context);
 
         Phake::verify($context)->setMachinist($this->machinist);
         Phake::verify($context)->setMachinistParameters($expectedArray);
+    }
+
+    public function testInitializeConfiguresMachinistButOnlyOnceEver()
+    {
+        $context = Phake::mock('\DerpTest\Behat\MachinistExtension\Context\MachinistContext');
+        $expectedArray = array('Expected' => 'array');
+        $initializer = new MachinistAwareInitializer(
+            $this->machinist,
+            $this->configurator,
+            $expectedArray
+        );
+        $initializer->initialize($context);
+        $initializer->initialize($context);
+
+        Phake::verify($this->configurator)->configure($expectedArray);
     }
 }

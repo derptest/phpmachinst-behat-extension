@@ -25,6 +25,7 @@ namespace DerpTest\Behat\MachinistExtension\Context\Initializer;
 use Behat\Behat\Context\ContextInterface;
 use Behat\Behat\Context\Initializer\InitializerInterface;
 use DerpTest\Behat\MachinistExtension\Context\MachinistAwareInterface;
+use DerpTest\Behat\MachinistExtension\Context\MachinistConfigurator;
 use DerpTest\Machinist\Machinist;
 
 /**
@@ -44,9 +45,20 @@ class MachinistAwareInitializer implements InitializerInterface
      */
     private $parameters;
 
-    public function __construct(Machinist $machinist, array $parameters)
+    /**
+     * @var MachinistConfigurator
+     */
+    private $configurator;
+
+    /**
+     * @var bool Has machinist been configured already?
+     */
+    private $machinistConfigured = false;
+
+    public function __construct(Machinist $machinist, MachinistConfigurator $configurator, array $parameters)
     {
         $this->machinist = $machinist;
+        $this->configurator = $configurator;
         $this->parameters = $parameters;
     }
 
@@ -69,6 +81,11 @@ class MachinistAwareInitializer implements InitializerInterface
      */
     public function initialize(ContextInterface $context)
     {
+        if (!$this->machinistConfigured) {
+            $this->configurator->configure($this->parameters);
+            $this->machinistConfigured = true;
+        }
+
         $context->setMachinist($this->machinist);
         $context->setMachinistParameters($this->parameters);
     }

@@ -72,7 +72,7 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
         $actual = null;
 
         $this->extension->load($expected, $this->container);
-        Phake::verify($this->container)->set('derptest.phpmachinist.behat.parameters', Phake::capture($actual));
+        Phake::verify($this->container)->setParameter('derptest.phpmachinist.behat.parameters', Phake::capture($actual));
         $this->assertEquals($expected, $actual, 'Unexpected configuration passed to container');
     }
 
@@ -104,10 +104,122 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
 
         $definition = null;
         Phake::verify($this->container)->setDefinition(
-            'derptest.phpmachinist.context.behat.initializer',
+            'derptest.phpmachinist.behat.context.initializer',
             Phake::capture($definition)
         );
         $this->assertInstanceOf('\Symfony\Component\DependencyInjection\Definition', $definition);
         $this->assertTrue($definition->hasTag('behat.context.initializer'));
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     */
+    public function testLoadThrowsExceptionWhenMongoStoreHasNoDatabase()
+    {
+        $data = array(
+            'store' => array(
+                'default' => array(
+                    'type' => 'mongo',
+                    'dsn' => 'xxx',
+                )
+            )
+        );
+        $this->extension->load($data, $this->container);
+    }
+
+    public function testLoadDefaultsBlueprintRelationshipWithNoForeignDefaultsToId()
+    {
+        $data = array(
+            'blueprint' => array(
+                'bp' => array(
+                    'relationships' => array(
+                        'r1' => array()
+                    )
+                )
+            )
+        );
+
+        $this->extension->load($data, $this->container);
+
+        $params = null;
+        Phake::verify($this->container)
+            ->setParameter(
+                'derptest.phpmachinist.behat.parameters',
+                Phake::capture($params)
+            );
+
+        $relationship = $params['blueprint']['bp']['relationships']['r1'];
+        $this->assertArrayHasKey('foreign', $relationship);
+        $this->assertEquals('id', $relationship['foreign']);
+    }
+
+    public function testLoadDefaultsBlueprintRelationshipWithNoLocalDefaultsRelNamePlusId()
+    {
+        $data = array(
+            'blueprint' => array(
+                'bp' => array(
+                    'relationships' => array(
+                        'r1' => array()
+                    )
+                )
+            )
+        );
+
+        $this->extension->load($data, $this->container);
+
+        $params = null;
+        Phake::verify($this->container)
+            ->setParameter(
+                'derptest.phpmachinist.behat.parameters',
+                Phake::capture($params)
+            );
+
+        $relationship = $params['blueprint']['bp']['relationships']['r1'];
+        $this->assertArrayHasKey('local', $relationship);
+        $this->assertEquals('r1Id', $relationship['local']);
+    }
+
+    public function testLoadBlueprintWithNoEntityDefaultsToKey()
+    {
+        $data = array(
+            'blueprint' => array(
+                'bp' => array()
+            )
+        );
+
+        $this->extension->load($data, $this->container);
+
+        $params = null;
+        Phake::verify($this->container)
+            ->setParameter(
+                'derptest.phpmachinist.behat.parameters',
+                Phake::capture($params)
+            );
+
+        $blueprint = $params['blueprint']['bp'];
+        $this->assertArrayHasKey('entity', $blueprint);
+        $this->assertEquals('bp', $blueprint['entity']);
+    }
+
+    public function testLoadBlueprintWithNoStoreDefaultsToDefault()
+    {
+        $data = array(
+            'blueprint' => array(
+                'bp' => array()
+            )
+        );
+
+        $this->extension->load($data, $this->container);
+
+        $params = null;
+        Phake::verify($this->container)
+            ->setParameter(
+                'derptest.phpmachinist.behat.parameters',
+                Phake::capture($params)
+            );
+
+        $blueprint = $params['blueprint']['bp'];
+        $this->assertArrayHasKey('store', $blueprint);
+        $this->assertEquals('default', $blueprint['store']);
     }
 }

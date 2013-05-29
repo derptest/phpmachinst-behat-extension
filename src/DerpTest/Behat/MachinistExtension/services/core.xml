@@ -16,12 +16,17 @@
                  factory-method="instance"
         />
 
+        <service id="derptest.phpmachinist.configurator" class="%derptest.phpmachinist.configurator.class%">
+            <argument type="service" id="derptest.phpmachinist" />
+        </service>
+
         <service id="derptest.phpmachinist.behat.context.class_guesser" class="%derptest.phpmachinist.behat.context.class_guesser.class%">
             <tag name="behat.context.class_guesser" />
         </service>
 
-        <service id="derptest.phpmachinist.context.behat.initializer" class="%derptest.phpmachinist.behat.context.initializer.class%">
+        <service id="derptest.phpmachinist.behat.context.initializer" class="%derptest.phpmachinist.behat.context.initializer.class%">
             <argument type="service" id="derptest.phpmachinist" />
+            <argument type="service" id="derptest.phpmachinist.configurator" />
             <argument>%derptest.phpmachinist.behat.parameters%</argument>
             <tag name="behat.context.initializer" />
         </service>

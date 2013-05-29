@@ -44,9 +44,11 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
      */
     public function load(array $config, ContainerBuilder $container)
     {
+        $this->validateConfig($config);
+        $this->processDefaults($config);
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/services'));
         $loader->load('core.xml');
-        $container->set('derptest.phpmachinist.behat.parameters', $config);
+        $container->setParameter('derptest.phpmachinist.behat.parameters', $config);
     }
 
     /**
@@ -62,7 +64,6 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
                     ->defaultFalse()
                 ->end()
                 ->arrayNode('store')
-                    ->isRequired()
                     ->requiresAtLeastOneElement()
                     ->useAttributeAsKey('name')
                     ->prototype('array')
@@ -90,6 +91,34 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
                         ->end()
                     ->end()
                 ->end()
+                ->arrayNode('blueprint')
+                    ->requiresAtLeastOneElement()
+                    ->useAttributeAsKey('name')
+                    ->prototype('array')
+                    ->children()
+                        ->scalarNode('store')
+                            ->defaultValue('default')
+                        ->end()
+                        ->scalarNode('entity')
+                        ->end()
+                        ->arrayNode('defaults')
+                            ->addDefaultsIfNotSet()
+                        ->end()
+                        ->arrayNode('relationships')
+                            ->useAttributeAsKey('name')
+                            ->prototype('array')
+                            ->children()
+                                ->scalarNode('foreign')
+                                    ->defaultValue('id')
+                                ->end()
+                                ->scalarNode('local')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->end()
+                    ->end()
+                ->end()
             ->end()
         ->end();
     }
@@ -102,5 +131,59 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
     public function getCompilerPasses()
     {
         return array();
+    }
+
+    protected function validateConfig(array $config)
+    {
+        if (isset($config['store'])) {
+            $this->validateMongoStoreConfigs($config['store']);
+        }
+    }
+
+    protected function validateMongoStoreConfigs(array $configs)
+    {
+        foreach ($configs as $config) {
+            if ($config['type'] == 'mongo') {
+                if (empty($config['database'])) {
+                    throw new InvalidConfigurationException(
+                        'The "database" configuration property must be set for all mongo stores'
+                    );
+                }
+            }
+        }
+    }
+
+    protected function processDefaults(array &$configs)
+    {
+        if (!empty($configs['blueprint'])) {
+            foreach ($configs['blueprint'] as $key => &$blueprint) {
+                if (!empty($blueprint['relationships'])) {
+                    foreach ($blueprint['relationships'] as $name => &$relationship) {
+                        if (empty($relationship['foreign'])) {
+                            $relationship['foreign'] = 'id';
+                        }
+                        if (empty($relationship['local'])) {
+                            $relationship['local'] = $name . 'Id';
+                        }
+                    }
+                }
+
+                if (empty($blueprint['entity'])) {
+                    $blueprint['entity'] = $key;
+                }
+
+                if (empty($blueprint['store'])) {
+                    $blueprint['store'] = 'default';
+                }
+            }
+        }
+
+        if (!empty($configs['store'])) {
+            foreach ($configs['store'] as $name => &$store) {
+                if (empty($store['entity'])) {
+                    $store['entity'] = $name;
+                }
+            }
+        }
     }
 }

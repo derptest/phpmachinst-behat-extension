@@ -44,23 +44,15 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
     private $node;
 
     /**
-     * @var array Minimum config to avoid error
+     * @var Extension
      */
-    private $requiredConfig = array(
-        'store' => array(
-            'default' => array(
-                'type' => 'sqlite',
-                'dsn'  => 'sqlite::memory:'
-            )
-        )
-    );
-
+    private $extension;
 
     protected function setUp()
     {
-        $extension = new Extension();
+        $this->extension = new Extension();
         $definition = new ArrayNodeDefinition('test');
-        $extension->getConfig($definition);
+        $this->extension->getConfig($definition);
         $this->node = $definition->getNode();
     }
 
@@ -69,35 +61,36 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
         $this->node = null;
     }
 
+    public function testNoDataIsRequiredToReturnConfig()
+    {
+        $expected = $this->node->finalize(array());
+        $this->assertNotNull($expected);
+    }
+
+    /**
+     * @depends testNoDataIsRequiredToReturnConfig
+     */
     public function testTruncateOnWipeCanBeConfigured()
     {
-        $actual = $this->node->finalize($this->requiredConfig);
+        $actual = $this->node->finalize(array());
         $this->assertArrayHasKey('truncate_on_wipe', $actual);
     }
 
+    /**
+     * @depends testNoDataIsRequiredToReturnConfig
+     */
     public function testTruncateOnWipeDefaultsToFalse()
     {
-        $actual = $this->node->finalize($this->requiredConfig);
+        $actual = $this->node->finalize(array());
         $this->assertFalse($actual['truncate_on_wipe']);
     }
 
     public function testTruncateOnWipeCanUseConfig()
     {
         $actual = $this->node->finalize(
-            array_merge(
-                $this->requiredConfig,
-                array('truncate_on_wipe' => true)
-            )
+            array('truncate_on_wipe' => true)
         );
         $this->assertTrue($actual['truncate_on_wipe']);
-    }
-
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     */
-    public function testStoreSettingsDefault()
-    {
-        $this->node->finalize(array());
     }
 
     /**
@@ -157,7 +150,8 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
         $expected = array(
             'default' => array(
                 'type' => $type,
-                'dsn' => 'sqlite::memory:'
+                'dsn' => 'sqlite::memory:',
+                'database' => 'db'
             )
         );
         $actual = $this->node->finalize(array('store' => $expected));
@@ -173,6 +167,70 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
             'SQLite' => array('sqlite'),
             'MySql' => array('mysql'),
             'Mongo DB' => array('mongo')
+        );
+    }
+
+    public function testBlueprintWithNoDefaultsHasEmptyArray()
+    {
+        $actual = $this->node->finalize(array(
+            'blueprint' => array('test-blueprint' => array())
+        ));
+
+        $this->assertArrayHasKey(
+            'defaults',
+            $actual['blueprint']['test-blueprint']
+        );
+        $this->assertEquals(
+            array(),
+            $actual['blueprint']['test-blueprint']['defaults']
+        );
+    }
+
+    public function testBlueprintWithDefaultsReturnsDefaults()
+    {
+        $expected = array('default-key' => 'default-value');
+
+        $actual = $this->node->finalize(array(
+            'blueprint' => array(
+                'test-blueprint' => array(
+                    'defaults' => $expected
+                )
+            )
+        ));
+
+        $this->assertArrayHasKey(
+            'defaults',
+            $actual['blueprint']['test-blueprint']
+        );
+        $this->assertEquals(
+            $expected,
+            $actual['blueprint']['test-blueprint']['defaults']
+        );
+    }
+
+    public function testBlueprintWithRelationshipsHasRelationships()
+    {
+        $expected = array(
+            'relationship-test' => array(
+                'foreign' => 'foreign-id',
+                'local' => 'local-id'
+            )
+        );
+        $actual = $this->node->finalize(array(
+            'blueprint' => array(
+                'test-blueprint' => array(
+                    'relationships' => $expected
+                )
+            )
+        ));
+
+        $this->assertArrayHasKey(
+            'relationships',
+            $actual['blueprint']['test-blueprint']
+        );
+        $this->assertEquals(
+            $expected,
+            $actual['blueprint']['test-blueprint']['relationships']
         );
     }
 }
