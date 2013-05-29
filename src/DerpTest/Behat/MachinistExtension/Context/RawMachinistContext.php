@@ -112,58 +112,6 @@ class RawMachinistContext implements ExtendedContextInterface, MachinistAwareInt
         return null;
     }
 
-    protected function initializeStores($storeDefinitions)
-    {
-        foreach ($storeDefinitions as $name => $storeDefinition) {
-            if ($storeDefinition['type'] == 'sqlite') {
-                $store = new Sqlite(new \PDO($storeDefinition['dsn']));
-            } elseif ($storeDefinition['type'] == 'mysql') {
-                $store = new Mysql(new \PDO(
-                    $storeDefinition['dsn'],
-                    $storeDefinition['user'],
-                    $storeDefinition['password'],
-                    $storeDefinition['options']
-                ));
-            } elseif ($storeDefinition['type'] == 'mongo') {
-                if (class_exists('\MongoClient')) {
-                    $class = '\MongoClient';
-                } else {
-                    $class = '\Mongo';
-                }
-                if (!empty($storeDefinition['user'])) {
-                    $storeDefinition['options']['username'] = $storeDefinition['user'];
-                }
-                if (!empty($storeDefinition['password'])) {
-                    $storeDefinition['options']['password'] = $storeDefinition['password'];
-                }
-                $mongoClient = new $class(
-                    $storeDefinition['dsn'],
-                    $storeDefinition['options']
-                );
-                $db = $mongoClient->selectDB($storeDefinition['database']);
-                $store = new MongoDB($db);
-            } elseif ($storeDefinition['type'] == 'doctrine-orm') {
-                if (!($this instanceof \Behat\Symfony2Extension\Context\KernelAwareInterface)) {
-                    throw new InvalidDefinitionException(
-                        'The doctrine-orm store type requires the Symfony2 Extension be enable'
-                    );
-                }
-
-                $entityManager = $this->getContainerService($storeDefinition['dsn']);
-                $store = new Doctrine($entityManager);
-            } elseif ($storeDefinition['type'] == 'doctrine-mongo') {
-                if (!($this instanceof \Behat\Symfony2Extension\Context\KernelAwareInterface)) {
-                    throw new InvalidDefinitionException(
-                        'The doctrine-orm store type requires the Symfony2 Extension be enable'
-                    );
-                }
-                $objectManager = $this->getContainerService($storeDefinition['dsn']);
-                throw new RuntimeException('doctrine-mongo is not yet implemented');
-            }
-            $this->getMachinist()->addStore($store, $name);
-        }
-    }
-
     /**
      * @return Machinist
      */
@@ -174,10 +122,6 @@ class RawMachinistContext implements ExtendedContextInterface, MachinistAwareInt
 
     protected function processParameters(array $parameters)
     {
-        if (array_key_exists('store', $parameters)) {
-            $this->initializeStores($parameters['store']);
-        }
-
         if (array_key_exists('truncate_on_wipe', $parameters)) {
             $this->truncateOnWipe = (bool) $parameters['truncate_on_wipe'];
         }

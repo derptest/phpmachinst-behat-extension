@@ -4,6 +4,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <parameters>
         <parameter key="derptest.phpmachinist.class">DerpTest\Machinist\Machinist</parameter>
+        <parameter key="derptest.phpmachinist.configurator.class">DerpTest\Behat\MachinistExtension\Context\MachinistConfigurator</parameter>
         <parameter key="derptest.phpmachinist.behat.context.class_guesser.class">DerpTest\Behat\MachinistExtension\Context\ClassGuesser\MachinistContextClassGuesser</parameter>
         <parameter key="derptest.phpmachinist.behat.context.initializer.class">DerpTest\Behat\MachinistExtension\Context\Initializer\MachinistAwareInitializer</parameter>
         <parameter key="derptest.phpmachinist.behat.parameters" type="collection"></parameter>

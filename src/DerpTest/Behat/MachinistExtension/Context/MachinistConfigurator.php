@@ -74,9 +74,9 @@ class MachinistConfigurator
 
     protected function addMongoStore($name, array $config)
     {
-        $options = $config['options'];
-        if (!empty($config['username'])) {
-            $options['options']['username'] = $config['username'];
+        $options = isset($config['options']) ? $config['options'] : array();
+        if (!empty($config['user'])) {
+            $options['options']['username'] = $config['user'];
         }
         if (!empty($config['password'])) {
             $options['options']['password'] = $config['password'];
@@ -91,9 +91,11 @@ class MachinistConfigurator
 
     protected function addSqlStore($name, array $config)
     {
-        $username = isset($config['username'])? $config['username'] : null;
+        $username = isset($config['user'])? $config['user'] : null;
         $password = isset($config['password'])? $config['password'] : null;
-        $pdo = new \PDO($config['dsn'], $username, $password, $config['options']);
+        $options  = isset($config['options']) ? $config['options'] : array();
+        $options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
+        $pdo = new \PDO($config['dsn'], $username, $password, $options);
         $store = SqlStore::fromPdo($pdo);
         $this->machinist->addStore($store, $name);
     }
@@ -101,7 +103,7 @@ class MachinistConfigurator
     protected function configureBlueprints(array $config)
     {
         foreach ($config as $name => $blueprintConfig) {
-            $defaults = $blueprintConfig['defaults'];
+            $defaults = isset($blueprintConfig['defaults']) ? $blueprintConfig['defaults'] : array();
             if (isset($blueprintConfig['relationships'])) {
                 $this->addRelationshipsToDefaults($blueprintConfig['relationships'], $defaults);
             }

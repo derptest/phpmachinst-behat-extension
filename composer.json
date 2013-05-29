@@ -33,7 +33,7 @@
     "require": {
         "php": ">5.3.0",
         "behat/behat": "*",
-        "derptest/phpmachinist": "v2.0.0-alpha1"
+        "derptest/phpmachinist": "*@dev"
     },
     "require-dev": {
         "phake/phake": "v2.0.0-alpha1",

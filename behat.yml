@@ -1,0 +1,54 @@
+default:
+  paths:
+    features: features
+    bootstrap: %behat.paths.features%/bootstrap
+  extensions:
+    \DerpTest\Behat\MachinistExtension\Extension:
+      store:
+        mysql_store:
+          type: mysql
+          dsn:  mysql:host=localhost;port=3307;dbname=testdb
+          user: root
+
+        sqlite_store:
+          type: sqlite
+          dsn:  sqlite:/tmp/phpMachinistExtensionBehatTest.sq3
+
+        mongo_store:
+         type:     mongo
+         dsn:      mongodb://localhost
+         database: testdb
+
+      blueprint:
+        mysql_company:
+          store:  mysql_store
+          entity: company
+        mysql_user:
+          store:  mysql_store
+          entity: user
+          defaults:
+            active: true
+          relationships:
+            mysql_company: ~
+
+        sqlite_company:
+          store:  sqlite_store
+          entity: company
+        sqlite_user:
+          store:  sqlite_store
+          entity: user
+          defaults:
+            active: true
+          relationships:
+            sqlite_company: ~
+
+        mongo_company:
+          store:  mongo_store
+          entity: company
+        mongo_user:
+          store:  mongo_store
+          entity: user
+          defaults:
+            active: true
+          relationships:
+            mongo_company: ~
