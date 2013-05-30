@@ -170,22 +170,6 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testBlueprintWithNoDefaultsHasEmptyArray()
-    {
-        $actual = $this->node->finalize(array(
-            'blueprint' => array('test-blueprint' => array())
-        ));
-
-        $this->assertArrayHasKey(
-            'defaults',
-            $actual['blueprint']['test-blueprint']
-        );
-        $this->assertEquals(
-            array(),
-            $actual['blueprint']['test-blueprint']['defaults']
-        );
-    }
-
     public function testBlueprintWithDefaultsReturnsDefaults()
     {
         $expected = array('default-key' => 'default-value');
