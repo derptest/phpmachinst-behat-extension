@@ -9,10 +9,6 @@ Feature: Steps that affect all data work correctly
       | name  |
       | pedro |
 
-    Given the following "mongo_company" data exists:
-      | name  |
-      | pedro |
-
   Scenario: Wiping all data wipes all data
     When I wipe all data
     Then there is no "mysql_company" data

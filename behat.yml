@@ -4,6 +4,8 @@ default:
     bootstrap: %behat.paths.features%/bootstrap
   extensions:
     \DerpTest\Behat\MachinistExtension\Extension:
+      truncate_on_wipe: true
+
       store:
         mysql_store:
           type: mysql
@@ -13,11 +15,6 @@ default:
         sqlite_store:
           type: sqlite
           dsn:  sqlite:/tmp/phpMachinistExtensionBehatTest.sq3
-
-        mongo_store:
-         type:     mongo
-         dsn:      mongodb://localhost
-         database: testdb
 
       blueprint:
         mysql_company:
@@ -41,14 +38,3 @@ default:
             active: true
           relationships:
             sqlite_company: ~
-
-        mongo_company:
-          store:  mongo_store
-          entity: company
-        mongo_user:
-          store:  mongo_store
-          entity: user
-          defaults:
-            active: true
-          relationships:
-            mongo_company: ~

@@ -21,8 +21,3 @@ $pdo = new PDO('sqlite:' . $file, null, null, array(PDO::ATTR_ERRMODE => PDO::ER
 $pdo->exec('CREATE TABLE user (id INTEGER PRIMARY KEY ASC, username, companyId INTEGER, active)');
 $pdo->exec('CREATE TABLE company (id INTEGER PRIMARY KEY ASC, name)');
 unset($pdo);
-
-// Setup MongoDB for test
-$mongo = new MongoClient();
-$db = $mongo->selectDB('testdb');
-$db->drop();

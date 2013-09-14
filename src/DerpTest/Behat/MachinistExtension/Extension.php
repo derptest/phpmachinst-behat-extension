@@ -154,33 +154,53 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
 
     protected function processDefaults(array &$configs)
     {
+
+        if (!empty($configs['store'])) {
+            $this->processStoreDefaults($configs['store']);
+        }
+
         if (!empty($configs['blueprint'])) {
-            foreach ($configs['blueprint'] as $key => &$blueprint) {
-                if (!empty($blueprint['relationships'])) {
-                    foreach ($blueprint['relationships'] as $name => &$relationship) {
-                        if (empty($relationship['foreign'])) {
-                            $relationship['foreign'] = 'id';
-                        }
-                        if (empty($relationship['local'])) {
-                            $relationship['local'] = $name . 'Id';
-                        }
-                    }
-                }
+            $this->processBlueprintDefaults($configs['blueprint']);
+            // Process blueprints defaults separately from relationships to ensure
+            // all blueprints exists before relating them
+            $this->processRelationshipDefaults($configs['blueprint']);
+        }
+    }
 
-                if (empty($blueprint['entity'])) {
-                    $blueprint['entity'] = $key;
-                }
-
-                if (empty($blueprint['store'])) {
-                    $blueprint['store'] = 'default';
-                }
+    protected function processStoreDefaults(array &$storeConfigs)
+    {
+        foreach ($storeConfigs as $name => &$store) {
+            if (empty($store['entity'])) {
+                $store['entity'] = $name;
             }
         }
 
-        if (!empty($configs['store'])) {
-            foreach ($configs['store'] as $name => &$store) {
-                if (empty($store['entity'])) {
-                    $store['entity'] = $name;
+    }
+
+    protected function processBlueprintDefaults(array &$blueprintConfigs)
+    {
+        foreach ($blueprintConfigs as $key => &$blueprint) {
+            if (empty($blueprint['entity'])) {
+                $blueprint['entity'] = $key;
+            }
+
+            if (empty($blueprint['store'])) {
+                $blueprint['store'] = 'default';
+            }
+        }
+    }
+
+    protected function processRelationshipDefaults(array &$blueprintConfigs)
+    {
+        foreach ($blueprintConfigs as &$blueprint) {
+            if (!empty($blueprint['relationships'])) {
+                foreach ($blueprint['relationships'] as $name => &$relationship) {
+                    if (empty($relationship['foreign'])) {
+                        $relationship['foreign'] = 'id';
+                    }
+                    if (empty($relationship['local'])) {
+                        $relationship['local'] = $blueprintConfigs[$name]['entity'] . 'Id';
+                    }
                 }
             }
         }

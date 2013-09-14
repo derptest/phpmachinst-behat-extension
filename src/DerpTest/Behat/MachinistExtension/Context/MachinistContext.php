@@ -22,7 +22,6 @@
 
 namespace DerpTest\Behat\MachinistExtension\Context;
 
-use Behat\Behat\Context\ExtendedContextInterface;
 use Behat\Gherkin\Node\TableNode;
 use DerpTest\Machinist\Machinist;
 use DerpTest\Machinist\Store\SqlStore;
@@ -34,6 +33,12 @@ use DerpTest\Machinist\Store\SqlStore;
  */
 class MachinistContext extends RawMachinistContext implements MachinistAwareInterface
 {
+    static $specialsMap = array(
+        '{null}' => null,
+        '{true}' => true,
+        '{false}' => false,
+    );
+
     /**
      * @param $blueprint
      * @param TableNode $table
@@ -43,27 +48,22 @@ class MachinistContext extends RawMachinistContext implements MachinistAwareInte
      */
     public function theFollowingMachinesExist($blueprint, TableNode $table)
     {
-        $arr = array();
         foreach ($table->getHash() as $row) {
-            $bp = $this->getMachinist()->getBlueprint($blueprint);
-            if (!$bp) {
-                throw new \InvalidArgumentException(
-                    sprintf('No blueprint %s found', $blueprint)
-                );
-            }
-            $overrides = array();
-            foreach ($row as $key => $val) {
-                if ($bp->hasRelationship($key)) {
-                    $relOverrides = $this->findRelationalOverrides($val);
-                    $relationship = $bp->getRelationship($key);
-                    $overrides[$key] = $relationship->getBlueprint()->findOrCreate($relOverrides);
-                } else {
-                    $overrides[$key] = $val;
-                }
-            }
-            $arr[] = $bp->make($overrides);
+            $this->addMachine($blueprint, $row);
         }
-        $this->blueprints[$blueprint] = $arr;
+    }
+
+    /**
+     * @param $blueprint
+     * @param TableNode $table
+     *
+     * @throws \InvalidArgumentException
+     * @Given /^the following "(?P<blueprint>(?:[^"]|\\")*)" exists:$/
+     */
+    public function theFollowingMachineExists($blueprint, TableNode $table)
+    {
+        $data = $table->getRowsHash();
+        $this->addMachine($blueprint, $data);
     }
 
     /**
@@ -92,10 +92,26 @@ class MachinistContext extends RawMachinistContext implements MachinistAwareInte
     public function thereIsNoData($blueprint)
     {
         $rows = $this->getMachinist()
+            ->getBlueprint($blueprint);
+        if ($rows !== null && $rows->count() > 0) {
+            throw new \RuntimeException(sprintf('%d records were found', count($rows)));
+        }
+    }
+
+    /**
+     * @Then /^only the following "(?P<blueprint>(?:[^"]|\\")*)" data is found:$/
+     */
+    public function theOnlyFollowingDataIsFound($blueprint, TableNode $table)
+    {
+        $this->theFollowingDataIsFound($blueprint, $table);
+        $dataRows = $this->getMachinist()
             ->getBlueprint($blueprint)
             ->count();
-        if ($rows > 0) {
-            throw new \RuntimeException(sprintf('%d records were found', count($rows)));
+        $tableRows = count($table->getHash());
+        if ($tableRows > $dataRows) {
+            throw new \RuntimeException(sprintf('%d more records were found than expected', $tableRows - $dataRows));
+        } elseif ($tableRows < $dataRows) {
+            throw new \RuntimeException(sprintf('%d fewer records were found than expected', $dataRows - $tableRows));
         }
     }
 
@@ -116,7 +132,8 @@ class MachinistContext extends RawMachinistContext implements MachinistAwareInte
                 if ($bp->hasRelationship($key)) {
                     $relOverrides = $this->findRelationalOverrides($val);
                     $relationship = $bp->getRelationship($key);
-                    $search[$key] = $relationship->getBlueprint()->findOrCreate($relOverrides);
+                    $related = $relationship->getBlueprint()->findOrCreate($relOverrides);
+                    $search[$relationship->getLocal()] = $related[$relationship->getForeign()];
                 } else {
                     $search[$key] = $val;
                 }
@@ -128,24 +145,27 @@ class MachinistContext extends RawMachinistContext implements MachinistAwareInte
         }
     }
 
-
-    /**
-     * @Then /^only the following "(?P<blueprint>(?:[^"]|\\")*)" data is found:$/
-     */
-    public function theOnlyFollowingDataIsFound($blueprint, TableNode $table)
+    protected function addMachine($blueprint, array $data)
     {
-        $this->theFollowingDataIsFound($blueprint, $table);
-        $dataRows = $this->getMachinist()
-            ->getBlueprint($blueprint)
-            ->count();
-        $tableRows = count($table->getHash());
-        if ($tableRows > $dataRows) {
-            throw new \RuntimeException(sprintf('%d more records were found than expected', $dataRows - $tableRows));
-        } elseif ($tableRows < $dataRows) {
-            throw new \RuntimeException(sprintf('%d fewer records were found than expected', $tableRows - $dataRows));
-        }
-    }
 
+        $bp = $this->getMachinist()->getBlueprint($blueprint);
+        if (!$bp) {
+            throw new \InvalidArgumentException(
+                sprintf('No blueprint %s found', $blueprint)
+            );
+        }
+        $overrides = array();
+        foreach ($data as $key => $val) {
+            if ($bp->hasRelationship($key)) {
+                $relOverrides = $this->findRelationalOverrides($val);
+                $relationship = $bp->getRelationship($key);
+                $overrides[$key] = $relationship->getBlueprint()->findOrCreate($relOverrides);
+            } else {
+                $overrides[$key] = $this->mapSpecials($val);
+            }
+        }
+        $bp->make($overrides);
+    }
 
     private function findRelationalOverrides($valueString)
     {
@@ -160,5 +180,14 @@ class MachinistContext extends RawMachinistContext implements MachinistAwareInte
             }
         }
         return $relOverrides;
+    }
+
+    private function mapSpecials($val)
+    {
+        $mapped = $val;
+        if (array_key_exists($val, self::$specialsMap)) {
+            $mapped = self::$specialsMap[$val];
+        }
+        return $mapped;
     }
 }

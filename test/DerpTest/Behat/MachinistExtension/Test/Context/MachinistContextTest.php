@@ -22,6 +22,7 @@
  
 namespace DerpTest\Behat\MachinistExtension\Test\Context;
 
+use Behat\Gherkin\Node\TableNode;
 use Phake;
 use DerpTest\Behat\MachinistExtension\Context\MachinistContext;
 
@@ -95,5 +96,37 @@ class MachinistContextTest extends \PHPUnit_Framework_TestCase
         $this->context->thereAreNoMachines();
 
         Phake::verify($this->machinist)->wipeAll(true);
+    }
+
+    /**
+     * @dataProvider dataProviderSpecialValues
+     * @param $value
+     * @param $expected
+     */
+    public function testSpecialValues($value, $expected)
+    {
+        $blueprint = Phake::mock('\DerpTest\Machinist\Blueprint');
+        Phake::when($this->machinist)
+            ->getBlueprint(Phake::anyParameters())
+            ->thenReturn($blueprint);
+        $blueprintName = 'Blueprint Name';
+
+        $table = new TableNode("| value | {$value} |");
+        $this->context->theFollowingMachineExists($blueprintName, $table);
+
+        Phake::verify($this->machinist)->getBlueprint($blueprintName);
+        Phake::verify($blueprint)->make(Phake::capture($data));
+        $this->assertArrayHasKey('value', $data);
+        $actual = $data['value'];
+        $this->assertSame($expected, $actual);
+    }
+
+    public function dataProviderSpecialValues()
+    {
+        return array(
+            'Null' => array("{null}", null),
+            'Boolean true' => array("{true}", true),
+            'Boolean false' => array("{false}", false),
+        );
     }
 }

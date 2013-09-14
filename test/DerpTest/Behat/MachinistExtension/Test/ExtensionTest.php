@@ -131,6 +131,7 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
     {
         $data = array(
             'blueprint' => array(
+                'r1' => array(),
                 'bp' => array(
                     'relationships' => array(
                         'r1' => array()
@@ -153,10 +154,11 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('id', $relationship['foreign']);
     }
 
-    public function testLoadDefaultsBlueprintRelationshipWithNoLocalDefaultsRelNamePlusId()
+    public function testLoadDefaultsBlueprintRelationshipWithNoLocalAndNoBpEntityForRemoteDefaultsRelNamePlusId()
     {
         $data = array(
             'blueprint' => array(
+                'r1' => array(),
                 'bp' => array(
                     'relationships' => array(
                         'r1' => array()
@@ -177,6 +179,35 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
         $relationship = $params['blueprint']['bp']['relationships']['r1'];
         $this->assertArrayHasKey('local', $relationship);
         $this->assertEquals('r1Id', $relationship['local']);
+    }
+
+    public function testLoadDefaultsBlueprintRelationshipWithNoLocalAndBpEntityForRemoteDefaultsEntityNamePlusId()
+    {
+        $data = array(
+            'blueprint' => array(
+                'r1' => array(
+                    'entity' => 'e1'
+                ),
+                'bp' => array(
+                    'relationships' => array(
+                        'r1' => array()
+                    )
+                )
+            )
+        );
+
+        $this->extension->load($data, $this->container);
+
+        $params = null;
+        Phake::verify($this->container)
+            ->setParameter(
+                'derptest.phpmachinist.behat.parameters',
+                Phake::capture($params)
+            );
+
+        $relationship = $params['blueprint']['bp']['relationships']['r1'];
+        $this->assertArrayHasKey('local', $relationship);
+        $this->assertEquals('e1Id', $relationship['local']);
     }
 
     public function testLoadBlueprintWithNoEntityDefaultsToKey()

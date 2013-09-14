@@ -36,7 +36,7 @@
         "derptest/phpmachinist": "*@dev"
     },
     "require-dev": {
-        "phake/phake": "v2.0.0-alpha1",
+        "phake/phake": "~2.0@alpha",
         "phpunit/phpunit": "*"
     }
 }
