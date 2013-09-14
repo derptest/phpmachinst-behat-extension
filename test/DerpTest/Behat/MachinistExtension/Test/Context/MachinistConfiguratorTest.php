@@ -64,14 +64,6 @@ class MachinistConfiguratorTest extends \PHPUnit_Framework_TestCase
 
         $this->config = array(
             'store' => array(
-                'mongo-store' => array(
-                    'type' => 'mongo',
-                    'dsn'  => 'mongodb://localhost',
-                    'database' => 'db',
-                    'options' => array(
-                        'w' => '1'
-                    )
-                ),
                 'mysql-store' => array(
                     'type' => 'mysql',
                     'dsn'  => 'mysql:localhost',

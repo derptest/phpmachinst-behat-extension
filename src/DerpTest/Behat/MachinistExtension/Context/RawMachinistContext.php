@@ -24,12 +24,6 @@ namespace DerpTest\Behat\MachinistExtension\Context;
 
 use Behat\Behat\Context\ExtendedContextInterface;
 use DerpTest\Machinist\Machinist;
-use DerpTest\Machinist\Store\Doctrine;
-use DerpTest\Machinist\Store\MongoDB;
-use DerpTest\Machinist\Store\Mysql;
-use DerpTest\Machinist\Store\Sqlite;
-use Symfony\Component\Config\Definition\Exception\InvalidDefinitionException;
-use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 
 /**
  * @author Adam L. Englander <adam.l.englander@coupla.co>

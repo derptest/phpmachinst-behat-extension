@@ -24,7 +24,6 @@ namespace DerpTest\Behat\MachinistExtension\Context;
 use DerpTest\Machinist\Blueprint;
 use DerpTest\Machinist\Machinist;
 use DerpTest\Machinist\Relationship;
-use DerpTest\Machinist\Store\MongoDB;
 use DerpTest\Machinist\Store\SqlStore;
 
 /**
@@ -60,33 +59,8 @@ class MachinistConfigurator
     protected function configureStores(array $config)
     {
         foreach ($config as $name => $storeConfig) {
-            switch ($storeConfig['type']) {
-                case 'mongo':
-                    $this->addMongoStore($name, $storeConfig);
-                break;
-                case 'sqlite':
-                case 'mysql':
-                    $this->addSqlStore($name, $storeConfig);
-                break;
-            }
+            $this->addSqlStore($name, $storeConfig);
         }
-    }
-
-    protected function addMongoStore($name, array $config)
-    {
-        $options = isset($config['options']) ? $config['options'] : array();
-        if (!empty($config['user'])) {
-            $options['options']['username'] = $config['user'];
-        }
-        if (!empty($config['password'])) {
-            $options['options']['password'] = $config['password'];
-        }
-        $options['db'] = $config['database'];
-        $class = class_exists('\MongoClient') ? '\MongoClient' : '\Mongo';
-        $mongoClient = new $class($config['dsn'], $options);
-        $mongoDB = $mongoClient->selectDB($config['database']);
-        $store = new MongoDB($mongoDB);
-        $this->machinist->addStore($store, $name);
     }
 
     protected function addSqlStore($name, array $config)

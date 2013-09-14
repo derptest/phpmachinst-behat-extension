@@ -13,5 +13,4 @@ Feature: Steps that affect all data work correctly
     When I wipe all data
     Then there is no "mysql_company" data
     Then there is no "sqlite_company" data
-    Then there is no "mongo_company" data
 

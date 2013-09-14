@@ -72,8 +72,7 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
                                 ->isRequired()
                                 ->values(array(
                                     'sqlite',
-                                    'mysql',
-                                    'mongo'
+                                    'mysql'
                                 ))
                             ->end()
                             ->scalarNode('dsn')
@@ -134,22 +133,7 @@ class Extension implements \Behat\Behat\Extension\ExtensionInterface
 
     protected function validateConfig(array $config)
     {
-        if (isset($config['store'])) {
-            $this->validateMongoStoreConfigs($config['store']);
-        }
-    }
-
-    protected function validateMongoStoreConfigs(array $configs)
-    {
-        foreach ($configs as $config) {
-            if ($config['type'] == 'mongo') {
-                if (empty($config['database'])) {
-                    throw new InvalidConfigurationException(
-                        'The "database" configuration property must be set for all mongo stores'
-                    );
-                }
-            }
-        }
+        // Blank for now
     }
 
     protected function processDefaults(array &$configs)

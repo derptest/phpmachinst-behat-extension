@@ -165,8 +165,7 @@ class ExtensionConfigIntegrationTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             'SQLite' => array('sqlite'),
-            'MySql' => array('mysql'),
-            'Mongo DB' => array('mongo')
+            'MySql' => array('mysql')
         );
     }
 

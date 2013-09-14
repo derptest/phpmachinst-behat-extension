@@ -111,22 +111,6 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($definition->hasTag('behat.context.initializer'));
     }
 
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     */
-    public function testLoadThrowsExceptionWhenMongoStoreHasNoDatabase()
-    {
-        $data = array(
-            'store' => array(
-                'default' => array(
-                    'type' => 'mongo',
-                    'dsn' => 'xxx',
-                )
-            )
-        );
-        $this->extension->load($data, $this->container);
-    }
-
     public function testLoadDefaultsBlueprintRelationshipWithNoForeignDefaultsToId()
     {
         $data = array(
