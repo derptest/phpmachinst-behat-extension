@@ -32,8 +32,9 @@
     },
     "require": {
         "php": ">5.3.0",
-        "behat/behat": "*",
-        "derptest/phpmachinist": "~2.0" },
+        "behat/behat": "~2.4",
+        "derptest/phpmachinist": "~2.0"
+    },
     "require-dev": {
         "phake/phake": "~2.0@alpha",
         "phpunit/phpunit": "3.7.*"
