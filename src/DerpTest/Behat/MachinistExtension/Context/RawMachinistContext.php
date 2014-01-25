@@ -143,14 +143,4 @@ class RawMachinistContext implements ExtendedContextInterface, MachinistAwareInt
         $this->processParameters($parameters);
 
     }
-
-    private function getSymfonyContext()
-    {
-        $symfonyContext = $this
-            ->getMainContext()
-            ->getSubcontextByClassName(
-                'Behat\Symfony2Extension\Extension'
-            );
-        return $symfonyContext;
-    }
 }
