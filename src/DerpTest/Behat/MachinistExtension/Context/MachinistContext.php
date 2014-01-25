@@ -23,8 +23,6 @@
 namespace DerpTest\Behat\MachinistExtension\Context;
 
 use Behat\Gherkin\Node\TableNode;
-use DerpTest\Machinist\Machinist;
-use DerpTest\Machinist\Store\SqlStore;
 
 /**
  * @author Adam L. Englander <adam.l.englander@coupla.co>
