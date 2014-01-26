@@ -27,13 +27,13 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0.x-dev"
+            "dev-master": "3.0.x-dev"
         }
     },
     "require": {
         "php": ">5.3.0",
         "behat/behat": "~2.4",
-        "derptest/phpmachinist": "~2.0"
+        "derptest/phpmachinist": "~3.0"
     },
     "require-dev": {
         "phake/phake": "~2.0@alpha",
